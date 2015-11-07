@@ -4,14 +4,14 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
  
-public class GraphicUserInterface extends JPanel implements ActionListener {
+public class ChatWindow extends JPanel implements ActionListener {
     protected JTextField textField;
     protected JTextArea textArea;
     private final static String newline = "\n";
     private Send sendw;
     private JButton buttonDc;
     
-    public GraphicUserInterface() {
+    public ChatWindow() {
         super(new BorderLayout(0, 0));
         textField = new JTextField(20);
         textField.addActionListener(this);

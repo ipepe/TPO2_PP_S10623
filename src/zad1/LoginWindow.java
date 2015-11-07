@@ -8,30 +8,16 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;
 
-public class FirstWindow extends JPanel implements ActionListener {
+public class LoginWindow extends JPanel implements ActionListener {
   private JLabel jcomp1;
   private JTextField jcomp2;
-  private JLabel jcomp3;
-  private JTextField jcomp4;
-  private JLabel jcomp5;
-  private JComboBox jcomp6;
   private JButton jcomp7;
   private JFrame frame;
   private String[] strTab;
-  private GraphicUserInterface gui;
 
-  public FirstWindow() {
-      //construct preComponents
-      String[] jcomp6Items = {"224.0.0.1", "224.0.0.2", "224.0.0.22", "224.0.0.252", "224.0.0.255"};
-      
-      //construct components
+  public LoginWindow() {
       jcomp1 = new JLabel ("Pseudonim(min 3 znaki):");
       jcomp2 = new JTextField (5);
-      jcomp3 = new JLabel ("Nazwa pokoju(min 3 znaki):");
-      jcomp4 = new JTextField (5);
-      jcomp5 = new JLabel ("Podsiec (arp -a)");
-      jcomp6 = new JComboBox (jcomp6Items);
-      jcomp6.setSelectedIndex(2);
       jcomp7 = new JButton ("Zatwierdz");
       jcomp7.addActionListener(this);
 
@@ -44,10 +30,6 @@ public class FirstWindow extends JPanel implements ActionListener {
       //add components
       add (jcomp1);
       add (jcomp2);
-      add (jcomp3);
-      add (jcomp4);
-      add (jcomp5);
-      add (jcomp6);
       add (jcomp7);
   }
   public void actionPerformed(ActionEvent evt){
@@ -63,9 +45,8 @@ public class FirstWindow extends JPanel implements ActionListener {
       }
       
   }
-  public void startGui(GraphicUserInterface gui) {
-      this.gui=gui;
-      frame = new JFrame ("FirstWindow");
+  public void startGui() {
+      frame = new JFrame ("LoginWindow");
       frame.setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
       frame.getContentPane().add (this);
       frame.pack();

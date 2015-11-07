@@ -25,7 +25,7 @@ public class Server {
 			ssc.configureBlocking(false);
 			ssc.socket().bind(new InetSocketAddress("localhost", 9876));
 			selector = Selector.open();
-			ssc.register(selector,SelectionKey.OP_ACCEPT);
+			ssc.register(selector, SelectionKey.OP_ACCEPT);
 		} catch(Exception exc) {
 			exc.printStackTrace();
 			System.exit(1);
@@ -35,13 +35,18 @@ public class Server {
 	}
 	private void serviceConnections(){
 		while(true) {
+			//System.out.println("while true");
 			try {
+				//System.out.println("in try");
 				selector.select();
 				Set keys = selector.selectedKeys();
 				Iterator iter = keys.iterator();
+				//System.out.println("after iterator");
 				while(iter.hasNext()) {
 					SelectionKey key = (SelectionKey) iter.next();
+					//System.out.println("with selection key");
 					if (key.isAcceptable()) {
+						//System.out.println("is acceptable");
 						SocketChannel cc = ssc.accept();
 						cc.configureBlocking(false);
 						cc.register(selector, SelectionKey.OP_READ);
@@ -49,6 +54,7 @@ public class Server {
 					}
 
 					if (key.isReadable()) {
+						//System.out.println("is readable");
 						SocketChannel cc = (SocketChannel) key.channel();
 						serviceRequest(cc);
 						continue;
@@ -74,21 +80,27 @@ public class Server {
 		try {
 			readLoop:
 			while (true) {
+				//System.out.println("while true in readloop");
 				int n = sc.read(bbuf);
 				if (n > 0) {
 					bbuf.flip();
 					CharBuffer cbuf = charset.decode(bbuf);
 					while(cbuf.hasRemaining()) {
+						//System.out.println("while true in hasremaining");
 						char c = cbuf.get();
 						if (c == '\r' || c == '\n') break readLoop;
 						reqString.append(c);
 					}
+				}else{
+					break readLoop;
 				}
 			}
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
-		System.out.println(reqString);
+		if(reqString.length() > 0){
+			System.out.println(reqString);
+		}
 
 	}
 	public static void main(String[] args) {

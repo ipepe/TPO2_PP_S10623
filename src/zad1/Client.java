@@ -16,10 +16,10 @@ import java.net.Socket;
 public class Client {
 
 	public Client(){
-		try{
-			Socket s = new Socket("localhost", 9876);
+		try(Socket s = new Socket("localhost", 9876)){
+			
 			PrintWriter out = new PrintWriter(s.getOutputStream(), true);
-			out.println("Test");
+			out.println("Test\n");
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
