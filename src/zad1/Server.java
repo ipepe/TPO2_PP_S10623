@@ -18,6 +18,7 @@ import java.nio.charset.*;
 public class Server {
 	private ServerSocketChannel ssc;
 	private Selector selector;
+	private Vector<SocketChannel> clients = new Vector();
 
 	public Server(){
 		try {
@@ -35,49 +36,61 @@ public class Server {
 	}
 	private void serviceConnections(){
 		while(true) {
-			//System.out.println("while true");
 			try {
-				//System.out.println("in try");
 				selector.select();
 				Set keys = selector.selectedKeys();
 				Iterator iter = keys.iterator();
-				//System.out.println("after iterator");
 				while(iter.hasNext()) {
 					SelectionKey key = (SelectionKey) iter.next();
-					//System.out.println("with selection key");
 					if (key.isAcceptable()) {
-						//System.out.println("is acceptable");
 						SocketChannel cc = ssc.accept();
 						cc.configureBlocking(false);
-						cc.register(selector, SelectionKey.OP_READ);
+						cc.register(selector, (SelectionKey.OP_READ | SelectionKey.OP_WRITE) );
+						// cc.register(selector, SelectionKey.OP_WRITE);
+						this.clients.add(cc);
 						continue;
 					}
 
 					if (key.isReadable()) {
-						//System.out.println("is readable");
 						SocketChannel cc = (SocketChannel) key.channel();
 						serviceRequest(cc);
 						continue;
 					}
 				}
 			} catch(Exception exc) {
-				// exc.printStackTrace();
+				exc.printStackTrace();
 				continue;
 			}
+		}
+	}
+	private void sendMessageToAllClients(String msg){
+		try {
+			selector.select();
+			Set keys = selector.selectedKeys();
+			Iterator iter = keys.iterator();
+			while(iter.hasNext()) {
+				SelectionKey key = (SelectionKey) iter.next();
+				if (key.isWriteable()) {
+					SocketChannel cc = (SocketChannel) key.channel();
+				}
+			}
+		} catch(Exception exc) {
+			exc.printStackTrace();
 		}
 	}
 
 	private static Charset charset  = Charset.forName("ISO-8859-2");
 	private static final int BSIZE = 1024;
 	private ByteBuffer bbuf = ByteBuffer.allocate(BSIZE);
-	private StringBuffer reqString = new StringBuffer();
+	private StringBuffer resultString = new StringBuffer();
 
 	private void serviceRequest(SocketChannel sc){
 		if (!sc.isOpen()) return;
 
-		reqString.setLength(0);
+		resultString.setLength(0);
 		bbuf.clear();
 		try {
+			int loopCounter = 0;
 			readLoop:
 			while (true) {
 				//System.out.println("while true in readloop");
@@ -89,22 +102,24 @@ public class Server {
 						//System.out.println("while true in hasremaining");
 						char c = cbuf.get();
 						if (c == '\r' || c == '\n') break readLoop;
-						reqString.append(c);
+						resultString.append(c);
 					}
 				}else{
-					break readLoop;
+					loopCounter++;
+					if ( loopCounter > 1000){
+						break readLoop;
+					}
 				}
 			}
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
-		if(reqString.length() > 0){
-			System.out.println(reqString);
+		if(resultString.length() > 0){
+			System.out.println(resultString);
 		}
 
 	}
 	public static void main(String[] args) {
 		new Server();
-
 	}
 }
