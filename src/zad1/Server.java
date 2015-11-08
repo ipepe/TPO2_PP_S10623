@@ -4,7 +4,7 @@
 *
 */
 
-// package zad1;
+package zad1;
 
 import java.net.*;
 import java.io.*;
@@ -13,12 +13,13 @@ import java.util.regex.*;
 import java.nio.*;
 import java.nio.channels.*;
 import java.nio.charset.*;
+import java.util.*;
+import java.text.*;
 
 
 public class Server {
 	private ServerSocketChannel ssc;
 	private Selector selector;
-	private Vector<SocketChannel> clients = new Vector();
 
 	public Server(){
 		try {
@@ -31,8 +32,11 @@ public class Server {
 			exc.printStackTrace();
 			System.exit(1);
 		}
-		System.out.println("Server started and ready for handling requests");
+		System.out.println("Server started and ready for handling requests at "+ getDateString());
 		serviceConnections();
+	}
+	public String getDateString(){
+		return new SimpleDateFormat ("yyyy-MM-dd hh:mm:ss").format(new Date());
 	}
 	private void serviceConnections(){
 		while(true) {
@@ -44,16 +48,20 @@ public class Server {
 					SelectionKey key = (SelectionKey) iter.next();
 					if (key.isAcceptable()) {
 						SocketChannel cc = ssc.accept();
-						cc.configureBlocking(false);
-						cc.register(selector, (SelectionKey.OP_READ | SelectionKey.OP_WRITE) );
-						// cc.register(selector, SelectionKey.OP_WRITE);
-						this.clients.add(cc);
+						if (cc != null){
+							cc.configureBlocking(false);
+							cc.register(selector, (SelectionKey.OP_READ | SelectionKey.OP_WRITE) );
+						}
 						continue;
 					}
 
 					if (key.isReadable()) {
 						SocketChannel cc = (SocketChannel) key.channel();
-						serviceRequest(cc);
+						String result_string = NioHelper.readStringFromSocketChannel(cc);
+						if(result_string.length() > 0){
+							result_string = getDateString() + " " + result_string;
+							this.sendMessageToAllClients(result_string);
+						}
 						continue;
 					}
 				}
@@ -70,8 +78,10 @@ public class Server {
 			Iterator iter = keys.iterator();
 			while(iter.hasNext()) {
 				SelectionKey key = (SelectionKey) iter.next();
-				if (key.isWriteable()) {
+				if (key.isWritable()) {
 					SocketChannel cc = (SocketChannel) key.channel();
+					// System.out.println("Channel is writable");
+					NioHelper.writeStringToSocketChannel(msg, cc);
 				}
 			}
 		} catch(Exception exc) {
@@ -79,46 +89,6 @@ public class Server {
 		}
 	}
 
-	private static Charset charset  = Charset.forName("ISO-8859-2");
-	private static final int BSIZE = 1024;
-	private ByteBuffer bbuf = ByteBuffer.allocate(BSIZE);
-	private StringBuffer resultString = new StringBuffer();
-
-	private void serviceRequest(SocketChannel sc){
-		if (!sc.isOpen()) return;
-
-		resultString.setLength(0);
-		bbuf.clear();
-		try {
-			int loopCounter = 0;
-			readLoop:
-			while (true) {
-				//System.out.println("while true in readloop");
-				int n = sc.read(bbuf);
-				if (n > 0) {
-					bbuf.flip();
-					CharBuffer cbuf = charset.decode(bbuf);
-					while(cbuf.hasRemaining()) {
-						//System.out.println("while true in hasremaining");
-						char c = cbuf.get();
-						if (c == '\r' || c == '\n') break readLoop;
-						resultString.append(c);
-					}
-				}else{
-					loopCounter++;
-					if ( loopCounter > 1000){
-						break readLoop;
-					}
-				}
-			}
-		}catch(Exception ex){
-			ex.printStackTrace();
-		}
-		if(resultString.length() > 0){
-			System.out.println(resultString);
-		}
-
-	}
 	public static void main(String[] args) {
 		new Server();
 	}

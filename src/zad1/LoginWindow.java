@@ -9,48 +9,39 @@ import javax.swing.*;
 import javax.swing.event.*;
 
 public class LoginWindow extends JPanel implements ActionListener {
-  private JLabel jcomp1;
-  private JTextField jcomp2;
-  private JButton jcomp7;
-  private JFrame frame;
-  private String[] strTab;
+	private JLabel nickLabel;
+	private JTextField nickInput;
+	private JButton confirmButton;
+	private JFrame frame;
 
-  public LoginWindow() {
-      jcomp1 = new JLabel ("Pseudonim(min 3 znaki):");
-      jcomp2 = new JTextField (5);
-      jcomp7 = new JButton ("Zatwierdz");
-      jcomp7.addActionListener(this);
-
-      //adjust size and set layout
-      setPreferredSize (new Dimension (300, 150));
-      
-      BoxLayout layout = new BoxLayout (this, BoxLayout.Y_AXIS);
-      setLayout (layout);
-
-      //add components
-      add (jcomp1);
-      add (jcomp2);
-      add (jcomp7);
-  }
-  public void actionPerformed(ActionEvent evt){
-      String[] strTab = new String[3];
-      if(jcomp2.getText().length()>3){
-          if(jcomp4.getText().length()>3){
-              strTab[0] = (String)jcomp6.getSelectedItem();
-              strTab[1] = jcomp2.getText();
-              strTab[2] = jcomp4.getText();
-              frame.dispose();
-              gui.createAndShowGUI(strTab);
-          }
-      }
-      
-  }
-  public void startGui() {
-      frame = new JFrame ("LoginWindow");
-      frame.setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
-      frame.getContentPane().add (this);
-      frame.pack();
-      frame.setVisible (true);
-      frame.setResizable(false);
-  }
+	public LoginWindow() {
+		nickLabel = new JLabel ("Pseudonim(min 3 znaki):");
+		nickInput = new JTextField ();
+		nickInput.addActionListener(this);
+		confirmButton = new JButton ("Zatwierdz");
+		confirmButton.addActionListener(this);
+		setPreferredSize (new Dimension (300, 70));
+		BoxLayout layout = new BoxLayout (this, BoxLayout.Y_AXIS);
+		setLayout (layout);
+		add (nickLabel);
+		add (nickInput);
+		add (confirmButton);
+		frame = new JFrame ("LoginWindow");
+		frame.setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
+		frame.getContentPane().add (this);
+		frame.pack();
+		frame.setVisible (true);
+		frame.setResizable(false);
+	}
+	public void actionPerformed(ActionEvent evt){
+		if(nickInput.getText().length()>3){
+			new Thread()
+			{
+				public void run() {
+					new Client(nickInput.getText());
+				}
+			}.start();
+			frame.dispose();
+		}
+	}
 }
